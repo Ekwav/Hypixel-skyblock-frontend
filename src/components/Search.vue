@@ -12,9 +12,10 @@
               ref="searchbar"
               :value="searchInput"
               debounce="100"
-              style="width: 100vw !important"
+              style="width: 95vw !important"
               @ionChange="search($event)"
-            ></ion-searchbar>
+            >
+            </ion-searchbar>
           </ion-row>
           <ion-list v-if="suggestions.length > 0">
             <ion-row v-for="item in suggestions" v-bind:key="item.data.name">
@@ -142,8 +143,8 @@ export default {
       }
     },
     clearSearchFields() {
-      this.suggestions = [];
       this.searchInput = null;
+      this.suggestions = [];
     },
     loadImagesForSuggestions() {
       let aPromises = [];
