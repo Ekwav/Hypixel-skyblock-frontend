@@ -46,7 +46,7 @@ export class WebSocketManager {
         }
       })
       .catch((err: any) => {
-        console.warn(err);
+        //console.warn(err);
       });
   }
 
@@ -78,8 +78,8 @@ export class WebSocketManager {
       } else if (req.type === "validation_error") {
         //
       } else {
-        console.log("currently not possible to catch");
-        console.log(req);
+        //console.log("currently not possible to catch");
+        //console.log(req);
       }
       req.success(response);
     }
