@@ -12,11 +12,13 @@
     <ion-list v-if="selectedSegmentButton == 'auctions'" class="fixedScrollBox">
       <ion-card v-for="auction in auctions" v-bind:key="auction.auctionId">
         <ion-grid>
-          <ion-card-title class="auctionAndBidItemHeader">{{auction.itemName}}</ion-card-title>
+          <ion-card-title class="auctionAndBidItemHeader">
+            {{ auction.itemName }}
+          </ion-card-title>
           <ion-row>
             <ion-col>
               <ion-label>Highest:</ion-label>
-              {{formatNumber(auction.highestBid)}}
+              {{ formatNumber(auction.highestBid) }}
             </ion-col>
           </ion-row>
         </ion-grid>
@@ -26,15 +28,17 @@
     <ion-list v-if="selectedSegmentButton == 'bids'" class="fixedScrollBox">
       <ion-card v-for="bid in bids" v-bind:key="bid.auctionId">
         <ion-grid>
-          <ion-card-title class="auctionAndBidItemHeader">{{bid.itemName}}</ion-card-title>
+          <ion-card-title class="auctionAndBidItemHeader">{{
+            bid.itemName
+          }}</ion-card-title>
           <ion-row>
             <ion-col>
               <ion-label>Own:</ion-label>
-              {{formatNumber(bid.highestOwn)}}
+              {{ formatNumber(bid.highestOwn) }}
             </ion-col>
             <ion-col>
               <ion-label>Highest:</ion-label>
-              {{formatNumber(bid.highestBid)}}
+              {{ formatNumber(bid.highestBid) }}
             </ion-col>
           </ion-row>
         </ion-grid>
@@ -59,42 +63,36 @@ export default {
   mounted() {
     bus.$on("search-changed", oToSearch => {
       this.player = oToSearch;
-      this.getChartData(oToSearch);
+      this.getNewPlayerAuctions(oToSearch);
     });
   },
   methods: {
-    getChartData(oToSearch) {
+    getNewPlayerAuctions(oToSearch) {
       let sRequestType = "";
-      let oRequestBody = {};
+      let oRequestBody = "";
       if (oToSearch.type !== "player") {
         return;
       }
-      sRequestType = "playerDetails";
-      oRequestBody = oToSearch.data.uuid;
+      sRequestType = "playerAuctions";
+      oRequestBody = {
+        uuid: oToSearch.data.uuid,
+        amount: 5,
+        offset: this.auctions.length
+      };
       this.$ws.send(
-        new WebSocketRequest(
-          sRequestType,
-          oRequestBody,
-          resp => {
-            if (resp.type == "playerResponse") {
-              let player = JSON.parse(resp.data);
-              this.auctions = player.auctions.map(auction => {
-                if (auction.highestBid == 0) {
-                  auction.priceFormatted = "no bid";
-                } else {
-                  auction.priceFormatted = numberFormat(auction.highestBid, 0);
-                }
-                return auction;
-              });
-              this.bids = player.bids;
-              return;
-            }
-          },
-          err => {
-            console.log("err callback");
-            console.log(err);
-          }
-        )
+        new WebSocketRequest(sRequestType, oRequestBody, resp => {
+          let auctions = JSON.parse(resp.data);
+          this.auctions.push(
+            player.auctions.map(auction => {
+              if (auction.highestBid == 0) {
+                auction.priceFormatted = "no bid";
+              } else {
+                auction.priceFormatted = numberFormat(auction.highestBid, 0);
+              }
+              return auction;
+            })
+          );
+        })
       );
     },
     segmentButtonChanged(event) {
