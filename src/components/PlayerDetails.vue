@@ -12,9 +12,7 @@
     <ion-list v-if="selectedSegmentButton == 'auctions'" class="fixedScrollBox">
       <ion-card v-for="auction in auctions" v-bind:key="auction.auctionId">
         <ion-grid>
-          <ion-card-title class="auctionAndBidItemHeader">
-            {{ auction.itemName }}
-          </ion-card-title>
+          <ion-card-title class="auctionAndBidItemHeader">{{ auction.itemName }}</ion-card-title>
           <ion-row>
             <ion-col>
               <ion-label>Highest:</ion-label>
@@ -28,9 +26,11 @@
     <ion-list v-if="selectedSegmentButton == 'bids'" class="fixedScrollBox">
       <ion-card v-for="bid in bids" v-bind:key="bid.auctionId">
         <ion-grid>
-          <ion-card-title class="auctionAndBidItemHeader">{{
+          <ion-card-title class="auctionAndBidItemHeader">
+            {{
             bid.itemName
-          }}</ion-card-title>
+            }}
+          </ion-card-title>
           <ion-row>
             <ion-col>
               <ion-label>Own:</ion-label>
@@ -68,30 +68,50 @@ export default {
   },
   methods: {
     getNewPlayerAuctions(oToSearch) {
-      let sRequestType = "";
-      let oRequestBody = "";
       if (oToSearch.type !== "player") {
         return;
       }
-      sRequestType = "playerAuctions";
-      oRequestBody = {
+      let oRequestBody = JSON.stringify({
         uuid: oToSearch.data.uuid,
         amount: 5,
         offset: this.auctions.length
-      };
+      });
+      let This = this;
       this.$ws.send(
-        new WebSocketRequest(sRequestType, oRequestBody, resp => {
-          let auctions = JSON.parse(resp.data);
-          this.auctions.push(
-            player.auctions.map(auction => {
-              if (auction.highestBid == 0) {
-                auction.priceFormatted = "no bid";
-              } else {
-                auction.priceFormatted = numberFormat(auction.highestBid, 0);
-              }
-              return auction;
-            })
-          );
+        new WebSocketRequest("playerAuctions", oRequestBody, resp => {
+          let newAuctions = JSON.parse(resp.data);
+          if (newAuctions.length === 0) {
+            return;
+          }
+          newAuctions = newAuctions.map(auction => {
+            if (auction.highestBid == 0) {
+              auction.priceFormatted = "no bid";
+            } else {
+              auction.priceFormatted = numberFormat(auction.highestBid, 0);
+            }
+            return auction;
+          });
+          This.auctions.push(newAuctions);
+        })
+      );
+    },
+    getNewPlayerBids(oToSearch) {
+      if (oToSearch.type !== "player") {
+        return;
+      }
+      let oRequestBody = JSON.stringify({
+        uuid: oToSearch.data.uuid,
+        amount: 5,
+        offset: this.bids.length
+      });
+      let This = this;
+      this.$ws.send(
+        new WebSocketRequest("playerBids", oRequestBody, resp => {
+          let newBids = JSON.parse(resp.data);
+          if (newBids.length === 0) {
+            return;
+          }
+          This.bids.push(newBids);
         })
       );
     },
