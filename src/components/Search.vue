@@ -12,7 +12,7 @@
               ref="searchbar"
               :value="searchInput"
               debounce="100"
-              style="width: 95vw !important"
+              style="width: 100vw !important"
               @ionChange="search($event)"
             ></ion-searchbar>
           </ion-row>
@@ -142,8 +142,8 @@ export default {
       }
     },
     clearSearchFields() {
-      this.searchInput = null;
       this.suggestions = [];
+      this.searchInput = null;
     },
     loadImagesForSuggestions() {
       let aPromises = [];
