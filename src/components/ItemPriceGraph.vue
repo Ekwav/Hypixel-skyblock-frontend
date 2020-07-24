@@ -66,18 +66,22 @@ export default {
             radius: 0
           }
         },
-        scales:{
-          yAxes:[{
-            ticks:{
-              beginAtZero: true,
-              callback: function(value,index,values){
-                return numberFormat(value,0);
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                callback: function(value, index, values) {
+                  return numberFormat(value, 0);
+                }
               }
             }
-          }],
-          xAxes:[{
-            type: 'time'
-          }]
+          ],
+          xAxes: [
+            {
+              type: "time"
+            }
+          ]
         }
       }
     });
@@ -105,6 +109,14 @@ export default {
       sRequestType = "itemPrices";
       oRequestBody.name = oToSearch.data.name;
       oRequestBody.start = Math.round(this.fetchspan / 1000);
+      if (oToSearch.data.enchantmentFilter) {
+        oRequestBody.enchantments = [
+          [
+            oToSearch.data.enchantmentFilter.enchantmentID,
+            oToSearch.data.enchantmentFilter.level
+          ]
+        ];
+      }
       oRequestBody = JSON.stringify(oRequestBody);
       this.$ws.send(
         new WebSocketRequest(
@@ -118,7 +130,8 @@ export default {
                 return a.end > b.end ? 1 : -1;
               });
               let nPriceSum = 0;
-              this.priceChart.options.title.text = "Price for 1 " + oToSearch.data.name;
+              this.priceChart.options.title.text =
+                "Price for 1 " + oToSearch.data.name;
               this.priceChart.data.labels = data.map(item => item.end);
               this.priceChart.data.datasets[0].data = data.map(item => {
                 nPriceSum += item.price;
