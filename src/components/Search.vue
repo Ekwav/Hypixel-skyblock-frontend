@@ -8,7 +8,7 @@
                 debounce: time before ionChange is fired
             -->
             <ion-searchbar
-              placeholder="search item or player"
+              placeholder="Search item or player"
               ref="searchbar"
               :value="searchInput"
               debounce="100"
@@ -37,6 +37,10 @@
           </ion-list>
         </ion-grid>
       </ion-toolbar>
+      <EnchantmentFilter
+        v-bind:filter="enchantmentFilter"
+        @onNewValidFilter="onNewValidFilter()"
+      />
     </form>
   </ion-item>
 </template>
@@ -45,13 +49,19 @@
 import { WebSocketRequest } from "@/utils/websocket";
 import { bus } from "../main";
 import storedItems from "../utils/items.json";
+import EnchantmentFilter from "./EnchantmentFilter";
 export default {
   name: "Search",
+  components: {
+    EnchantmentFilter
+  },
   data() {
     return {
       searchInput: "",
       items: storedItems,
-      suggestions: []
+      suggestions: [],
+      enchantmentFilter: {},
+      oSelected: {}
     };
   },
   mounted() {
@@ -129,11 +139,23 @@ export default {
       );
     },
     item_or_player_selected(e, oSelected) {
-      if (!oSelected) {
+      if (!oSelected.data) {
         return;
+      }
+      this.oSelected = oSelected;
+      if (
+        this.enchantmentFilter.enchantmentID &&
+        this.enchantmentFilter.level
+      ) {
+        oSelected.data.enchantmentFilter = this.enchantmentFilter;
       }
       this.clearSearchFields();
       bus.$emit("search-changed", oSelected);
+    },
+    onNewValidFilter() {
+      if (this.oSelected) {
+        this.item_or_player_selected(null, this.oSelected);
+      }
     },
     onSubmit(e) {
       e.preventDefault();
