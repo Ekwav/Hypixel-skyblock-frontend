@@ -21,6 +21,27 @@ export class WebSocketManager {
   }
 
   public send(request: WebSocketRequest): void {
+
+    if (this.ws.readyState === WebSocket.OPEN) {
+      request.data = btoa(request.data);
+
+      // save and send message
+      requests.push(request);
+      this.ws.send(JSON.stringify(request));
+    } else {
+      this.openWebsocket();
+      if (WebSocketRequest.errorSending >= 7) {
+        request.error({ error: "No Websocket connection available" });
+        return;
+      }
+      WebSocketRequest.errorSending++;
+      setTimeout(() => {
+        this.send(request);
+      }, 1000);
+    }
+
+    // search cache (disabled)
+    /*
     db.searchCache(request)
       .then((resp: any) => {
         if (resp) {
@@ -48,6 +69,7 @@ export class WebSocketManager {
       .catch((err: any) => {
         //console.warn(err);
       });
+      */
   }
 
   onOpen(): void {
@@ -67,13 +89,13 @@ export class WebSocketManager {
       // add into local db
       // if user search
       if (req.type === "search") {
-        db.cacheUserSearchResponse(req, response);
+        // db.cacheUserSearchResponse(req, response);
       } else if (req.type === "itemDetails") {
         if (!blocked) {
           blocked = true;
-          db.cacheItemDetailsResponse(req, response).then(
-            () => (blocked = false)
-          );
+          //db.cacheItemDetailsResponse(req, response).then(
+          //  () => (blocked = false)
+          //);
         }
       } else if (req.type === "validation_error") {
         //
