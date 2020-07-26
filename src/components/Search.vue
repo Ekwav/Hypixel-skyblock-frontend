@@ -17,10 +17,13 @@
             ></ion-searchbar>
           </ion-row>
           <ion-list v-if="suggestions.length > 0">
-            <ion-row v-for="item in suggestions" v-bind:key="item.data.name">
+            <ion-row
+              v-for="item in suggestions"
+              v-bind:key="item.data.name"
+              @click="item_or_player_selected($event, item)"
+            >
               <ion-thumbnail v-if="item.type == 'player'" style="--size: 35px">
-                <ion-img 
-                  :src="'https://crafatar.com/avatars/' + item.data.uuid"></ion-img>
+                <ion-img :src="'https://crafatar.com/avatars/' + item.data.uuid"></ion-img>
               </ion-thumbnail>
               <ion-thumbnail
                 v-if="item.type == 'item'"
@@ -29,9 +32,7 @@
               >
                 <ion-img :src="item.data.imgsrc"></ion-img>
               </ion-thumbnail>
-              <ion-item button="true" @click="item_or_player_selected($event, item)">
-                {{item.data.name}}
-              </ion-item>
+              <ion-item button="true" class="searchItem">{{item.data.name}}</ion-item>
             </ion-row>
           </ion-list>
         </ion-grid>
@@ -195,3 +196,14 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.searchItem {
+  width: 70%;
+}
+@media (min-width: 900px) {
+  .searchItem {
+    width: 95%;
+  }
+}
+</style>
