@@ -38,6 +38,7 @@ export default {
         })
       );
     },
+    //for fix-commit
     onFilterChange($event) {
       var newEnchantment = parseInt($event.target.value);
       var oldEnchantment = this.getFilterFromURLQuery().enchantmentID;
