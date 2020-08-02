@@ -13,14 +13,14 @@
               :value="searchInput"
               debounce="100"
               style="width: 100vw !important"
-              @ionChange="onSearch($event)"
+              @ionChange="search($event)"
             ></ion-searchbar>
           </ion-row>
           <ion-list v-if="suggestions.length > 0">
             <ion-row
               v-for="item in suggestions"
               v-bind:key="item.data.name"
-              @click="itemOrPlayerSelected($event, item, false)"
+              @click="item_or_player_selected($event, item)"
             >
               <ion-thumbnail v-if="item.type == 'player'" style="--size: 35px">
                 <ion-img :src="'https://crafatar.com/avatars/' + item.data.uuid"></ion-img>
@@ -37,7 +37,10 @@
           </ion-list>
         </ion-grid>
       </ion-toolbar>
-      <EnchantmentFilter v-bind:filter="enchantmentFilter" @onNewValidFilter="onNewValidFilter()" />
+      <EnchantmentFilter
+        v-bind:filter="enchantmentFilter"
+        @onNewValidFilter="onNewValidFilter()"
+      />
     </form>
   </ion-item>
 </template>
@@ -62,52 +65,52 @@ export default {
     };
   },
   mounted() {
-    var searchTerm = "";
-    if (this.$route.name === "itemDetails") {
-      searchTerm = this.$route.params.name;
-    }
-    if (this.$route.name === "playerDetails") {
-      searchTerm = this.$route.params.name;
-    }
-    this.searchInput = searchTerm;
-    this.search(searchTerm).then(() => {
-      this.oSelected = this.suggestions[0];
-    });
+    // setFocus only works after some delay
+    // loading default item also only works correctly if delayed
+    // no better way found
+    setTimeout(() => {
+      this.$refs.searchbar.setFocus();
+    }, 500);
+
+    // delay of 0ms because then function is called after
+    // rendering is finished
+    // no better way found
+    setTimeout(() => {
+      bus.$emit("search-changed", {
+        type: "item",
+        data: { name: "Diamond" }
+      });
+    }, 0);
   },
   methods: {
-    onSearch(e) {
-      this.search(e.target.value);
-    },
-    search(sToSearch) {
-      let This = this;
-      return new Promise(function(resolve, reject) {
-        if (sToSearch) {
-          sToSearch = sToSearch.toLowerCase();
-          var aMatches = This.items.filter(item =>
-            item.toLowerCase().startsWith(sToSearch)
-          );
-          aMatches = aMatches.map(item => {
-            return { type: "item", data: { name: item } };
+    search(e) {
+      let sToSearch = e.target.value;
+      if (sToSearch) {
+        sToSearch = sToSearch.toLowerCase();
+        var aMatches = this.items.filter(item =>
+          item.toLowerCase().startsWith(sToSearch)
+        );
+        aMatches = aMatches.map(item => {
+          return { type: "item", data: { name: item } };
+        });
+        if (aMatches.length > 5) {
+          aMatches = aMatches.slice(0, 5);
+          this.suggestions = aMatches;
+          this.loadImagesForSuggestions();
+        } else if (aMatches.length < 5) {
+          this.search_players(sToSearch, aPlayerNames => {
+            if (aMatches.length + aPlayerNames.length > 5) {
+              aPlayerNames = aPlayerNames.slice(0, 5 - aMatches.length);
+            }
+            this.suggestions = aMatches.concat(aPlayerNames);
+            this.loadImagesForSuggestions();
           });
-          if (aMatches.length > 5) {
-            aMatches = aMatches.slice(0, 5);
-            This.suggestions = aMatches;
-            This.loadImagesForSuggestions();
-          } else if (aMatches.length < 5) {
-            This.searchPlayer(sToSearch, aPlayerNames => {
-              if (aMatches.length + aPlayerNames.length > 5) {
-                aPlayerNames = aPlayerNames.slice(0, 5 - aMatches.length);
-              }
-              This.suggestions = aMatches.concat(aPlayerNames);
-              This.loadImagesForSuggestions();
-            });
-          }
-        } else {
-          This.suggestions = [];
         }
-      });
+      } else {
+        this.suggestions = [];
+      }
     },
-    searchPlayer(sSearch, callback) {
+    search_players(sSearch, callback) {
       if (sSearch.length < 3) {
         callback([]);
       }
@@ -135,41 +138,29 @@ export default {
         )
       );
     },
-    itemOrPlayerSelected(e, oSelected, hasQueryChanged) {
+    item_or_player_selected(e, oSelected) {
       if (!oSelected.data) {
         return;
       }
       this.oSelected = oSelected;
-      switch (oSelected.type) {
-        case "player":
-          if (this.$route.params.uuid !== oSelected.data.uuid) {
-            this.$router.push(
-              "/player/" + oSelected.data.name + "/" + oSelected.data.uuid
-            );
-          }
-          break;
-        case "item":
-          if (oSelected.data.name != this.$route.params.name || hasQueryChanged)
-            this.$router.push({
-              path: "/item/" + oSelected.data.name,
-              query: {
-                enchantmentFilter: JSON.stringify(this.enchantmentFilter)
-              }
-            });
-          break;
-        default:
-        // TODO: Error-Handling
+      if (
+        this.enchantmentFilter.enchantmentID &&
+        this.enchantmentFilter.level
+      ) {
+        oSelected.data.enchantmentFilter = this.enchantmentFilter;
       }
+      this.clearSearchFields();
+      bus.$emit("search-changed", oSelected);
     },
     onNewValidFilter() {
       if (this.oSelected) {
-        this.itemOrPlayerSelected(null, this.oSelected, true);
+        this.item_or_player_selected(null, this.oSelected);
       }
     },
     onSubmit(e) {
       e.preventDefault();
       if (this.suggestions[0]) {
-        this.itemOrPlayerSelected(null, this.suggestions[0], false);
+        this.item_or_player_selected(null, this.suggestions[0]);
       }
     },
     clearSearchFields() {
