@@ -24,7 +24,7 @@
     </ion-list>
     <ion-infinite-scroll
       v-if="selectedSegmentButton == 'auctions'"
-      @ionInfinite="getNewPlayerAuctions(10, $event)"
+      @ionInfinite="getNewPlayerAuctions(player, 10, $event)"
     >
       <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more data..."></ion-infinite-scroll-content>
     </ion-infinite-scroll>
@@ -52,7 +52,7 @@
     </ion-list>
     <ion-infinite-scroll
       v-if="selectedSegmentButton == 'bids'"
-      @ionInfinite="getNewPlayerBids(10, $event)"
+      @ionInfinite="getNewPlayerBids(player, 10, $event)"
     >
       <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more data..."></ion-infinite-scroll-content>
     </ion-infinite-scroll>
@@ -68,24 +68,18 @@ export default {
     return {
       auctions: [],
       bids: [],
-      playerUUID: {},
+      player: {},
       allBidsLoaded: false,
       allAuctionsLoaded: false,
       selectedSegmentButton: "auctions"
     };
   },
-  watch: {
-    $route: function(to, from) {
-      this.playerUUID = to.params.uuid;
-      this.init();
-    }
-  },
   mounted() {
-    this.playerUUID = this.$route.params.uuid;
-    this.init();
+    bus.$on("search-changed", this.searchChangedHandler);
   },
   methods: {
-    init() {
+    searchChangedHandler(oToSearch) {
+      this.player = oToSearch;
       this.bids = [];
       this.auctions = [];
       this.allBidsLoaded = false;
@@ -94,9 +88,12 @@ export default {
       this.loadInitialAuctions();
       this.loadInitalBids();
     },
-    getNewPlayerAuctions(numberOfAuctions, $event, callback) {
+    getNewPlayerAuctions(oToSearch, numberOfAuctions, $event, callback) {
+      if (oToSearch.type !== "player") {
+        return;
+      }
       let oRequestBody = JSON.stringify({
-        uuid: this.playerUUID,
+        uuid: oToSearch.data.uuid,
         amount: numberOfAuctions,
         offset: this.auctions.length
       });
@@ -126,9 +123,12 @@ export default {
         })
       );
     },
-    getNewPlayerBids(numberOfBids, $event, callback) {
+    getNewPlayerBids(oToSearch, numberOfBids, $event, callback) {
+      if (oToSearch.type !== "player") {
+        return;
+      }
       let oRequestBody = JSON.stringify({
-        uuid: this.playerUUID,
+        uuid: oToSearch.data.uuid,
         amount: numberOfBids,
         offset: this.bids.length
       });
@@ -158,7 +158,7 @@ export default {
     },
     loadInitialAuctions() {
       let This = this;
-      This.getNewPlayerAuctions(25, undefined, () => {
+      This.getNewPlayerAuctions(This.player, 25, undefined, () => {
         if (This.auctions.length < 20 && !This.allAuctionsLoaded) {
           This.loadInitialAuctions();
         }
@@ -166,7 +166,7 @@ export default {
     },
     loadInitalBids() {
       let This = this;
-      This.getNewPlayerBids(25, undefined, () => {
+      This.getNewPlayerBids(This.player, 25, undefined, () => {
         if (This.bids.length < 20 && !This.allBidsLoaded) {
           This.loadInitalBids();
         }
