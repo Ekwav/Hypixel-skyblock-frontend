@@ -37,7 +37,10 @@
           </ion-list>
         </ion-grid>
       </ion-toolbar>
-      <EnchantmentFilter v-bind:filter="enchantmentFilter" @onNewValidFilter="onNewValidFilter()" />
+      <EnchantmentFilter
+        v-if="showEnchantmentFilter"
+        @onNewValidFilter="onNewValidFilter()"
+      />
     </form>
   </ion-item>
 </template>
@@ -51,6 +54,9 @@ export default {
   name: "Search",
   components: {
     EnchantmentFilter
+  },
+  props: {
+    showEnchantmentFilter: Boolean
   },
   data() {
     return {

@@ -33,9 +33,7 @@
       <ion-card v-for="bid in bids" v-bind:key="bid.auctionId">
         <ion-grid>
           <ion-card-title class="auctionAndBidItemHeader">
-            {{
-            bid.itemName
-            }}
+            {{ bid.itemName }}
           </ion-card-title>
           <ion-row>
             <ion-col>
@@ -54,7 +52,10 @@
       v-if="selectedSegmentButton == 'bids'"
       @ionInfinite="getNewPlayerBids(10, $event)"
     >
-      <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more data..."></ion-infinite-scroll-content>
+      <ion-infinite-scroll-content
+        loading-spinner="bubbles"
+        loading-text="Loading more data..."
+      ></ion-infinite-scroll-content>
     </ion-infinite-scroll>
   </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
   <div class="ion-page">
     <ion-content class="ion-padding">
-      <Search />
+      <Search v-bind:showEnchantmentFilter="false" />
       <PlayerDetails />
     </ion-content>
   </div>

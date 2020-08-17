@@ -1,11 +1,35 @@
 <template>
   <div>
-    <ion-item class='enchantmentFilter'>
-      <ion-select ok-text='Select' cancel-text='Abort' placeholder='Choose enchantment' class='enchantmentFilterSelect' v-bind:value='selectedEnchantmentID' @ionChange='onFilterChange($event)'>
-        <ion-select-option v-for='enchantment in enchantments' v-bind:value='enchantment.id' v-bind:key='enchantment.id'>{{ enchantment.name }}</ion-select-option>
+    <ion-item class="enchantmentFilter">
+      <ion-select
+        ok-text="Select"
+        cancel-text="Abort"
+        placeholder="Choose enchantment"
+        class="enchantmentFilterSelect"
+        v-bind:value="this.selectedEnchantmentID"
+        @ionChange="onFilterChange($event)"
+      >
+        <ion-select-option
+          v-for="enchantment in enchantments"
+          v-bind:value="enchantment.id"
+          v-bind:key="enchantment.id"
+          >{{ enchantment.name }}</ion-select-option
+        >
       </ion-select>
-      <ion-select ok-text='Select' cancel-text='Abort' placeholder='Choose level' class='enchantmentFilterSelect' v-bind:value='selectedLevel' @ionChange='onLevelChange($event)'>
-        <ion-select-option v-for='level in [1, 2, 3, 4, 5, 6]' v-bind:key='level' v-bind:value='level'>{{ level }}</ion-select-option>
+      <ion-select
+        ok-text="Select"
+        cancel-text="Abort"
+        placeholder="Choose level"
+        class="enchantmentFilterSelect"
+        v-bind:value="this.selectedLevel"
+        @ionChange="onLevelChange($event)"
+      >
+        <ion-select-option
+          v-for="level in [1, 2, 3, 4, 5, 6]"
+          v-bind:key="level"
+          v-bind:value="level"
+          >{{ level }}</ion-select-option
+        >
       </ion-select>
     </ion-item>
   </div>
@@ -16,6 +40,8 @@ import { WebSocketRequest } from "../utils/websocket";
 export default {
   name: "EnchantmentFilter",
   data() {
+    // selectedLevel und selectedEnchantmentID werden nur zum setzen der select-Values verwendet
+    // anschließend sind sie dauerhaft null und reagieren nicht => bekannter Fehler der ion-select
     return {
       enchantments: [],
       selectedLevel: 0,
@@ -38,7 +64,6 @@ export default {
         })
       );
     },
-    //for fix-commit
     onFilterChange($event) {
       var newEnchantment = parseInt($event.target.value);
       var oldEnchantment = this.getFilterFromURLQuery().enchantmentID;
@@ -50,7 +75,7 @@ export default {
         query: {
           enchantmentFilter: JSON.stringify({
             enchantmentID: newEnchantment,
-            level: this.selectedLevel
+            level: this.selectedEnchantmentID
           })
         }
       });
@@ -66,7 +91,7 @@ export default {
         path: "/item/" + this.$route.params.name,
         query: {
           enchantmentFilter: JSON.stringify({
-            enchantmentID: this.selectedEnchantmentID,
+            enchantmentID: this.selectedLevel,
             level: newLevel
           })
         }
