@@ -1,14 +1,25 @@
 import Vue from "vue";
 import { IonicVueRouter } from "@ionic/vue";
 import Home from "../views/Home.vue";
+import PlayerView from "../views/PlayerView.vue";
+import ItemView from "../views/ItemView.vue";
 
 Vue.use(IonicVueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: Home
+    redirect: "/item/Aspect of the End"
+  },
+  {
+    path: "/player/:name/:uuid",
+    name: "playerDetails",
+    component: PlayerView
+  },
+  {
+    path: "/item/:name",
+    name: "itemDetails",
+    component: ItemView
   }
 ];
 
