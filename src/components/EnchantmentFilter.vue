@@ -1,35 +1,11 @@
 <template>
   <div>
-    <ion-item class="enchantmentFilter">
-      <ion-select
-        ok-text="Select"
-        cancel-text="Abort"
-        placeholder="Choose enchantment"
-        class="enchantmentFilterSelect"
-        v-bind:value="this.selectedEnchantmentID"
-        @ionChange="onFilterChange($event)"
-      >
-        <ion-select-option
-          v-for="enchantment in enchantments"
-          v-bind:value="enchantment.id"
-          v-bind:key="enchantment.id"
-          >{{ enchantment.name }}</ion-select-option
-        >
+    <ion-item class='enchantmentFilter'>
+      <ion-select ok-text='Select' cancel-text='Abort' placeholder='Choose enchantment' class='enchantmentFilterSelect' v-bind:value='this.selectedEnchantmentID' @ionChange='onFilterChange($event)'>
+        <ion-select-option v-for='enchantment in enchantments' v-bind:value='enchantment.id' v-bind:key='enchantment.id'>{{ enchantment.name }}</ion-select-option>
       </ion-select>
-      <ion-select
-        ok-text="Select"
-        cancel-text="Abort"
-        placeholder="Choose level"
-        class="enchantmentFilterSelect"
-        v-bind:value="this.selectedLevel"
-        @ionChange="onLevelChange($event)"
-      >
-        <ion-select-option
-          v-for="level in [1, 2, 3, 4, 5, 6]"
-          v-bind:key="level"
-          v-bind:value="level"
-          >{{ level }}</ion-select-option
-        >
+      <ion-select ok-text='Select' cancel-text='Abort' placeholder='Choose level' class='enchantmentFilterSelect' v-bind:value='this.selectedLevel' @ionChange='onLevelChange($event)'>
+        <ion-select-option v-for='level in [1, 2, 3, 4, 5, 6]' v-bind:key='level' v-bind:value='level'>{{ level }}</ion-select-option>
       </ion-select>
     </ion-item>
   </div>
@@ -67,6 +43,9 @@ export default {
     onFilterChange($event) {
       var newEnchantment = parseInt($event.target.value);
       var oldEnchantment = this.getFilterFromURLQuery().enchantmentID;
+      var enchantmentFilterQuery = this.$route.query.enchantmentFilter
+        ? JSON.parse(this.$route.query.enchantmentFilter)
+        : {};
       if (newEnchantment === oldEnchantment) {
         return;
       }
@@ -75,15 +54,17 @@ export default {
         query: {
           enchantmentFilter: JSON.stringify({
             enchantmentID: newEnchantment,
-            level: this.selectedEnchantmentID
+            level: enchantmentFilterQuery.level
           })
         }
       });
-      this.checkForNewValidFilterEventFire();
     },
     onLevelChange($event) {
       var newLevel = parseInt($event.target.value);
       var oldLevel = this.getFilterFromURLQuery().level;
+      var enchantmentFilterQuery = this.$route.query.enchantmentFilter
+        ? JSON.parse(this.$route.query.enchantmentFilter)
+        : {};
       if (newLevel === oldLevel) {
         return;
       }
@@ -91,12 +72,11 @@ export default {
         path: "/item/" + this.$route.params.name,
         query: {
           enchantmentFilter: JSON.stringify({
-            enchantmentID: this.selectedLevel,
+            enchantmentID: enchantmentFilterQuery.enchantmentID,
             level: newLevel
           })
         }
       });
-      this.checkForNewValidFilterEventFire();
     },
     formatEnchantments() {
       for (let i = 0; i < this.enchantments.length; i++) {
@@ -120,15 +100,6 @@ export default {
         enchantmentsAsObjects.push(enchantmentObject);
       });
       return enchantmentsAsObjects;
-    },
-    /**
-     * Feuert das Event NewValidFilter, wenn ein Filter geändert wurde,
-     * und jetzt beide Filter gefüllt sind.
-     */
-    checkForNewValidFilterEventFire() {
-      if (this.selectedLevel && this.selectedEnchantmentID) {
-        this.$emit("onNewValidFilter", null);
-      }
     },
     preSelectFromRoute() {
       var filter = this.$route.query.enchantmentFilter;

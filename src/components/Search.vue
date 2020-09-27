@@ -4,14 +4,10 @@
       <ion-toolbar>
         <ion-grid>
           <ion-row>
-            <!-- 
-                debounce: time before ionChange is fired
-            -->
             <ion-searchbar
               placeholder="Search item or player"
               ref="searchbar"
               :value="searchInput"
-              debounce="100"
               style="width: 100vw !important"
               @ionChange="onSearch($event)"
             ></ion-searchbar>
@@ -23,7 +19,9 @@
               @click="itemOrPlayerSelected($event, item, false)"
             >
               <ion-thumbnail v-if="item.type == 'player'" style="--size: 35px">
-                <ion-img :src="'https://crafatar.com/avatars/' + item.data.uuid"></ion-img>
+                <ion-img
+                  :src="'https://crafatar.com/avatars/' + item.data.uuid"
+                ></ion-img>
               </ion-thumbnail>
               <ion-thumbnail
                 v-if="item.type == 'item'"
@@ -32,15 +30,14 @@
               >
                 <ion-img :src="item.data.imgsrc"></ion-img>
               </ion-thumbnail>
-              <ion-item button="true" class="searchItem">{{item.data.name}}</ion-item>
+              <ion-item button="true" class="searchItem">{{
+                item.data.name
+              }}</ion-item>
             </ion-row>
           </ion-list>
         </ion-grid>
       </ion-toolbar>
-      <EnchantmentFilter
-        v-if="showEnchantmentFilter"
-        @onNewValidFilter="onNewValidFilter()"
-      />
+      <EnchantmentFilter v-if="showEnchantmentFilter" />
     </form>
   </ion-item>
 </template>
@@ -57,6 +54,17 @@ export default {
   },
   props: {
     showEnchantmentFilter: Boolean
+  },
+  watch: {
+    $route(to, from) {
+      this.enchantmentFilter.level = to.query.level;
+      this.enchantmentFilter.enchantmentID = to.query.enchantmentID;
+      if (this.oSelected.data.name !== to.params.name) {
+        this.search(to.$route.param.name).then(() => {
+          this.oSelected = this.suggestions[0];
+        });
+      }
+    }
   },
   data() {
     return {
@@ -99,6 +107,7 @@ export default {
             aMatches = aMatches.slice(0, 5);
             This.suggestions = aMatches;
             This.loadImagesForSuggestions();
+            resolve();
           } else if (aMatches.length < 5) {
             This.searchPlayer(sToSearch, aPlayerNames => {
               if (aMatches.length + aPlayerNames.length > 5) {
@@ -106,6 +115,7 @@ export default {
               }
               This.suggestions = aMatches.concat(aPlayerNames);
               This.loadImagesForSuggestions();
+              resolve();
             });
           }
         } else {
@@ -165,11 +175,6 @@ export default {
           break;
         default:
         // TODO: Error-Handling
-      }
-    },
-    onNewValidFilter() {
-      if (this.oSelected) {
-        this.itemOrPlayerSelected(null, this.oSelected, true);
       }
     },
     onSubmit(e) {
