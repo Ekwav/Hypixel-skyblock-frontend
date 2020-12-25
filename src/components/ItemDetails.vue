@@ -147,8 +147,6 @@ export default {
             }
           },
           err => {
-            console.log("err callback");
-            console.log(err);
           }
         )
       );

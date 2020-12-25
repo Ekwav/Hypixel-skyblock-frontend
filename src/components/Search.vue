@@ -99,7 +99,9 @@ export default {
           sToSearch = sToSearch.toLowerCase();
           var aMatches = This.items.filter(item =>
             item.toLowerCase().startsWith(sToSearch)
-          );
+          ).sort(function(a, b){
+            return a.length - b.length;
+          });
           aMatches = aMatches.map(item => {
             return { type: "item", data: { name: item } };
           });
@@ -204,8 +206,9 @@ export default {
                         let data = JSON.parse(resp.data);
                         let index = this.suggestions.findIndex(suggestion => {
                           return (
-                            suggestion.type == "item" &&
-                            data.AltNames.includes(suggestion.data.name)
+                            suggestion.type == "item" && 
+                            (data.AltNames && data.AltNames.includes(suggestion.data.name)
+                            || data.Name == suggestion.data.name)
                           );
                         });
                         if (index != -1) {

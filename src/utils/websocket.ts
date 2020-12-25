@@ -1,5 +1,7 @@
 import { DbManager } from "./indexeddb";
 
+import { Base64 } from 'js-base64';
+
 let requests: Array<WebSocketRequest> = [];
 let db: DbManager;
 let blocked = false;
@@ -23,7 +25,8 @@ export class WebSocketManager {
   public send(request: WebSocketRequest): void {
 
     if (this.ws.readyState === WebSocket.OPEN) {
-      request.data = btoa(request.data);
+      console.log(request);
+      request.data = Base64.encode( request.data);
 
       // save and send message
       requests.push(request);
@@ -31,7 +34,8 @@ export class WebSocketManager {
     } else {
       this.openWebsocket();
       if (WebSocketRequest.errorSending >= 7) {
-        request.error({ error: "No Websocket connection available" });
+        if(request.error != null)
+          request.error({ error: "No Websocket connection available" });
         return;
       }
       WebSocketRequest.errorSending++;
