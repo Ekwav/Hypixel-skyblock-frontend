@@ -1,5 +1,4 @@
 import { DbManager } from "./indexeddb";
-
 import { Base64 } from 'js-base64';
 
 let requests: Array<WebSocketRequest> = [];
@@ -25,7 +24,6 @@ export class WebSocketManager {
   public send(request: WebSocketRequest): void {
 
     if (this.ws.readyState === WebSocket.OPEN) {
-      console.log(request);
       request.data = Base64.encode( request.data);
 
       // save and send message
